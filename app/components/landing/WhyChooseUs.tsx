@@ -1,0 +1,65 @@
+import React from "react";
+import * as LucideIcons from "lucide-react";
+
+interface FeatureItem {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+interface WhyChooseUsProps {
+  data?: {
+    why_choose_us?: FeatureItem[];
+  } | null;
+}
+
+export function WhyChooseUs({ data }: WhyChooseUsProps) {
+  const reasons = (data?.why_choose_us ?? []).filter(
+    (r) => r.title?.trim() || r.desc?.trim()
+  );
+
+  // Agar koi reason nahi, section render mat karo
+  if (reasons.length === 0) return null;
+
+  const renderIcon = (iconName: string) => {
+    const IconComponent = (LucideIcons as any)[iconName];
+    if (IconComponent) {
+      return <IconComponent className="w-8 h-8 text-primary" />;
+    }
+    return <LucideIcons.Sparkles className="w-8 h-8 text-primary" />;
+  };
+
+  return (
+    <section className="py-20 bg-[var(--section-alt)] relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="inline-block mb-3">
+            <span className="text-[12px] font-bold text-primary uppercase tracking-[0.15em]">Core Features</span>
+            <div className="h-0.5 bg-primary mt-1 w-full" />
+          </div>
+          <h3 className="text-4xl font-black text-[#231F20] mb-4 leading-tight">
+            Why Parents Choose Us
+          </h3>
+        </div>
+
+        {/* Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reasons.map((item, idx) => (
+            <div key={idx} className="bg-[#FFFFFF] p-7 border border-[#E0E0E0] border-l-4 border-l-transparent hover:border-l-primary hover:shadow-lg transition-all duration-300 group">
+              {item.icon && (
+                <div className="w-14 h-14 rounded-sm bg-[#EFEFEF] flex items-center justify-center mb-5 group-hover:bg-primary transition-colors duration-300">
+                  <span className="group-hover:text-white transition-colors">{renderIcon(item.icon)}</span>
+                </div>
+              )}
+              {item.title && <h4 className="text-[16px] font-black text-[#231F20] mb-2">{item.title}</h4>}
+              {item.desc && <p className="text-[#828283] leading-relaxed text-[13px]">{item.desc}</p>}
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  );
+}
