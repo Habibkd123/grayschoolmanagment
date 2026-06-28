@@ -10,6 +10,7 @@ async function testApi() {
     await mongoose.connect(MONGODB_URI);
     console.log("Connected.");
 
+
     // We need to construct a mock NextRequest.
     // The route requires authentication. To bypass this or mock it, we can look at requireAuth.
     // Let's see what requireAuth expects. It usually looks at request.headers.get("Authorization") or cookies.
@@ -18,7 +19,7 @@ async function testApi() {
     // Or we can check if requireAuth has a debug bypass or if we can mock its return value.
     // Actually, let's just make a mock NextRequest with a valid Authorization header.
     // Wait, where is the JWT generated? Let's check lib/utils/auth or similar.
-    
+
     // Instead of mocking the API route which checks JWT, let's look at what the API route actually did.
     // Let's inspect requireAuth definition first.
   } catch (err) {
