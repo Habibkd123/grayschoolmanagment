@@ -47,7 +47,7 @@ const NAV_LINKS = [
 ];
 const FOOTER_LINKS = [
 
-  { label: "Infrastructure", href: "/infrastructure" },
+  { label: "Infrastructure", href: "/about/infrastructure" },
   { label: "News & Notices", href: "/news" },
   { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/contact" },
@@ -107,7 +107,7 @@ export function Footer({ contact, about, admissions }: FooterProps) {
 
       {/* ── Main Footer ─────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
           {/* Brand Column */}
           <div className="col-span-1">
@@ -185,7 +185,7 @@ export function Footer({ contact, about, admissions }: FooterProps) {
           <div>
             <h4 className="font-black text-white mb-5 text-[14px] uppercase tracking-wider flex items-center gap-2">
               <span className="w-4 h-0.5 bg-[var(--primary)] inline-block" />
-              Site Links
+              Quick Links
             </h4>
             <ul className="space-y-2.5 text-[13px]">
               {FOOTER_LINKS.map((link) => (
