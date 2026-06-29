@@ -20,14 +20,14 @@ export default async function StudentLifeAchievementsPage() {
   return (
     <main className="w-full">
       {/* Hero Section */}
-      <section className="relative py-28 bg-[var(--sidebar-bg)]">
+      <section className="relative py-28 bg-white">
         <div className="absolute inset-0">
-          <img src={heroImage || "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?q=80&w=1920&auto=format&fit=crop"} alt="Achievements" className="w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0F172A]/80 to-[#0F172A]" />
+          <img src={heroImage || "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?q=80&w=1920&auto=format&fit=crop"} alt="Achievements" className="w-full h-full object-cover" style={{ filter: "blur(3px)", transform: "scale(1.05)" }} />
+          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, #ffffff6b 90%, transparent)" }} />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <span className="inline-block px-4 py-1.5 bg-primary/20 border border-primary/30 text-[#FCA5A5] text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Our Pride</span>
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white leading-tight">Accolades & Achievements</h1>
+          <span className="inline-block px-4 py-1.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Our Pride</span>
+          <h1 className="text-5xl md:text-6xl  font-bold text-[#231F20] font-sans font-black leading-tight">Accolades & Achievements</h1>
         </div>
       </section>
 
@@ -45,7 +45,7 @@ export default async function StudentLifeAchievementsPage() {
           {achievements.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {achievements.map((item: any, idx: number) => (
-                <div key={item._id ?? idx} className="bg-slate-50 border border-slate-200 rounded-sm p-8 hover:bg-[var(--sidebar-bg)]/5 hover:border-primary/50 hover:shadow-xl transition-all duration-300 relative group">
+                <div key={item._id ?? idx} className="bg-slate-50 border border-slate-200 rounded-sm p-8 hover:bg-white/5 hover:border-primary/50 hover:shadow-xl transition-all duration-300 relative group">
                   <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <Award className="w-16 h-16 text-primary" />
                   </div>

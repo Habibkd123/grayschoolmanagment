@@ -36,7 +36,7 @@ function renderStatIcon(iconName: string) {
   return <span className="text-lg leading-none">{iconName}</span>;
 }
 
-export function Hero({ data }: { data?: HeroData | null }) {
+export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgroundImage?: string }) {
   const about = data?.about;
   const admissions = data?.admissions;
 
@@ -64,14 +64,29 @@ export function Hero({ data }: { data?: HeroData | null }) {
   const showBottomBar = recognitionTags.length > 0;
   const showHeroBadge = (admissionOpen || foundedYear || admissionYearLabel);
 
+  const sectionStyle = backgroundImage
+    ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : {};
+
   return (
-    <section id="home" className="relative bg-[#FFFFFF] overflow-hidden">
+    <section
+      id="home"
+      className="relative overflow-hidden bg-white"
+      style={sectionStyle}
+    >
+      {/* Semi-transparent white overlay to keep text highly readable if bg image exists */}
+      {backgroundImage && (
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{ backgroundColor: "color-mix(in oklab, #ffffff6b 90%, transparent)" }}
+        />
+      )}
 
       {/* ── Red Top Accent Bar ─────────────────────────── */}
-      <div className="w-full h-1 bg-[var(--primary)]" />
+      <div className="relative z-10 w-full h-1 bg-[var(--primary)]" />
 
       {/* ── Main Hero Grid ─────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-24 grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-24 grid lg:grid-cols-2 gap-12 items-center">
 
         {/* Left — Text Content */}
         <div className="max-w-2xl">

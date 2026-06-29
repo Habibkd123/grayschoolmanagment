@@ -36,14 +36,14 @@ export default async function AcademicsPage() {
   return (
     <main className="w-full">
       {/* Hero */}
-      <section className="relative py-28 bg-[var(--sidebar-bg)]">
+      <section className="relative py-28 bg-white">
         <div className="absolute inset-0">
-          <img src={academics?.hero_image_url || "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1920&auto=format&fit=crop"} alt="Academics" className="w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0F172A]/80 to-[#0F172A]" />
+          <img src={academics?.hero_image_url || "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1920&auto=format&fit=crop"} alt="Academics" className="w-full h-full object-cover" style={{ filter: "blur(3px)", transform: "scale(1.05)" }} />
+          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, #ffffff6b 90%, transparent)" }} />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <span className="inline-block px-4 py-1.5 bg-primary/20 border border-primary/30 text-[#FCA5A5] text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Our Curriculum</span>
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white leading-tight">Academic Programs</h1>
+          <span className="inline-block px-4 py-1.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Our Curriculum</span>
+          <h1 className="text-5xl md:text-6xl  font-bold text-[#231F20] font-sans font-black leading-tight">Academic Programs</h1>
         </div>
       </section>
 
@@ -83,7 +83,7 @@ export default async function AcademicsPage() {
                   )}
                   <h4 className="font-bold text-foreground text-[15px]">{m.name}</h4>
                   <p className="text-primary text-[12px] font-bold uppercase tracking-wide mt-1">{m.subject}</p>
-                  {m.qualification && <p className="text-slate-400 text-[12px] mt-1">{m.qualification}</p>}
+                  {m.qualification && <p className="text-slate-600 text-[12px] mt-1">{m.qualification}</p>}
                 </div>
               ))}
             </div>
@@ -92,7 +92,7 @@ export default async function AcademicsPage() {
       )}
 
       {/* Quick links */}
-      <section className="py-14 bg-[var(--sidebar-bg)]">
+      <section className="py-14 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
@@ -101,7 +101,7 @@ export default async function AcademicsPage() {
               { href: "/academics/faculty", label: "Faculty", icon: Users },
               { href: "/academics/calendar", label: "Academic Calendar", icon: Calendar },
             ].map((l) => (
-              <Link key={l.href} href={l.href} className="flex items-center gap-3 p-5 bg-white/5 border border-white/10 rounded-sm hover:bg-primary/10 hover:border-primary/30 transition-all group">
+              <Link key={l.href} href={l.href} className="flex items-center gap-3 p-5 bg-white/5 border border-white/10 rounded-sm hover:bg-primary/10 hover:border-[var(--primary)]/20 transition-all group">
                 <l.icon className="w-5 h-5 text-primary" />
                 <span className="text-white font-bold text-[14px]">{l.label}</span>
                 <ChevronRight className="w-4 h-4 text-white/40 ml-auto group-hover:text-primary" />

@@ -21,7 +21,7 @@ export default async function CircularsPage() {
   const items = await getNews();
   return (
     <main className="py-20 px-4 md:px-8 max-w-7xl mx-auto min-h-[60vh]">
-      <h1 className="text-4xl font-serif font-bold text-foreground mb-3">Circulars</h1>
+      <h1 className="text-4xl  font-bold text-foreground mb-3">Circulars</h1>
       <p className="text-primary font-bold uppercase tracking-widest text-[12px] mb-12">Official School Circulars</p>
       {items.length > 0 ? (
         <div className="space-y-4">
@@ -47,7 +47,7 @@ export default async function CircularsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20"><FileText className="w-16 h-16 text-slate-200 mx-auto mb-4" /><p className="text-slate-400">No circulars yet. Add them from <strong>Admin → Website → News</strong>.</p></div>
+        <div className="text-center py-20"><FileText className="w-16 h-16 text-slate-200 mx-auto mb-4" /><p className="text-slate-600">No circulars yet. Add them from <strong>Admin → Website → News</strong>.</p></div>
       )}
     </main>
   );

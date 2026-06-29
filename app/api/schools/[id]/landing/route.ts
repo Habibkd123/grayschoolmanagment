@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import LandingContent from "@/lib/models/LandingContent";
+import School from "@/lib/models/School";
 import { requireAuth } from "@/lib/utils/auth";
 
 type RouteContext = {
@@ -16,7 +17,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     await connectDB();
-    const doc = await LandingContent.findOne({ school_id: id }).lean();
+    const school = await School.findOne({ slug: id }).lean();
+    if (!school) {
+      return NextResponse.json({ success: false, message: "School not found" }, { status: 404 });
+    }
+    const doc = await LandingContent.findOne({ school_id: school._id }).lean();
     return NextResponse.json({ success: true, data: doc ?? null });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to fetch landing content";
@@ -34,12 +39,17 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
   try {
     await connectDB();
+    const school = await School.findOne({ slug: id }).lean();
+    if (!school) {
+      return NextResponse.json({ success: false, message: "School not found" }, { status: 404 });
+    }
+
     const body = await request.json();
     const { _id, school_id, __v, createdAt, updatedAt, ...updateData } = body;
 
     const doc = await LandingContent.findOneAndUpdate(
-      { school_id: id },
-      { $set: updateData, school_id: id },
+      { school_id: school._id },
+      { $set: updateData, school_id: school._id },
       { upsert: true, new: true, runValidators: false }
     );
 
@@ -64,6 +74,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   try {
     await connectDB();
+    const school = await School.findOne({ slug: id }).lean();
+    if (!school) {
+      return NextResponse.json({ success: false, message: "School not found" }, { status: 404 });
+    }
+
     const body = await request.json();
     const { section, data } = body as { section: string; data: Record<string, unknown> };
 
@@ -84,8 +99,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const doc = await LandingContent.findOneAndUpdate(
-      { school_id: id },
-      { $set: setPayload, $setOnInsert: { school_id: id } },
+      { school_id: school._id },
+      { $set: setPayload, $setOnInsert: { school_id: school._id } },
       { upsert: true, new: true, runValidators: false }
     );
 

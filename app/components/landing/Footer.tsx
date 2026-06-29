@@ -37,6 +37,20 @@ interface FooterProps {
   contact?: ContactData | null;
   about?: AboutData | null;
   admissions?: AdmissionsData | null;
+  // Layout config footer settings (optional)
+  footerConfig?: {
+    copyrightText?: string;
+    showNewsletter?: boolean;
+    showMap?: boolean;
+    layoutType?: string;
+  } | null;
+  // Social icons from layout config (supplement contact.social)
+  socialIcons?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    youtube?: string;
+  } | null;
 }
 
 const NAV_LINKS = [
@@ -53,14 +67,23 @@ const FOOTER_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
-export function Footer({ contact, about, admissions }: FooterProps) {
+export function Footer({ contact, about, admissions, footerConfig, socialIcons: layoutSocialIcons }: FooterProps) {
   const { schoolInfo } = usePublicSchoolInfo();
 
   const address = contact?.address?.trim();
   const phone = contact?.phone?.trim();
   const email = contact?.email?.trim();
   const mapUrl = contact?.map_embed_url?.trim();
-  const social = contact?.social;
+
+  // Merge social icons: prefer landing contact.social, supplement with layout config socialIcons
+  const social = {
+    facebook: contact?.social?.facebook || layoutSocialIcons?.facebook || '',
+    twitter: contact?.social?.twitter || layoutSocialIcons?.twitter || '',
+    instagram: contact?.social?.instagram || layoutSocialIcons?.instagram || '',
+    youtube: contact?.social?.youtube || layoutSocialIcons?.youtube || '',
+  };
+
+  const copyrightText = footerConfig?.copyrightText || null;
 
   const affiliationName = about?.affiliation_name?.trim();
   const affiliationNumber = about?.affiliation_number?.trim();
@@ -243,7 +266,8 @@ export function Footer({ contact, about, admissions }: FooterProps) {
         <div className="pt-6 border-t border-[#5C5D5D]/50 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px]">
           <p className="text-[#828283]">
             Copyright © {new Date().getFullYear()} {schoolInfo.school_name}
-            {schoolInfo.school_subtitle ? ` ${schoolInfo.school_subtitle}` : ""}. All rights reserved.
+            {schoolInfo.school_subtitle ? ` ${schoolInfo.school_subtitle}` : ""}.
+            {copyrightText ? ` ${copyrightText}` : " All rights reserved."}
           </p>
           <div className="flex items-center gap-4 text-[#828283]">
             {["Privacy Policy", "Terms of Service", "Sitemap"].map((item, i, arr) => (
