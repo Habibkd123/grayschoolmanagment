@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useSchedules } from "../../../hooks/useSchedules";
 import { useClasses } from "../../../hooks/useClasses";
 import { useTeachers } from "../../../hooks/useTeachers";
 import { useSubjects } from "../../../hooks/useSubjects";
+import { useTeacherAssignment } from "@/app/hooks/useTeacherAssignment";
+import { useAppState } from "@/app/context/store";
 import {
   Plus, Search, List, Grid, MoreVertical, Edit, Trash2,
   Calendar, Filter, ChevronDown, RefreshCw, Printer, Download, ToggleRight, Trash, FileText, Loader2
@@ -16,6 +18,8 @@ export default function ClassRoutinePage() {
   const { classes, isLoading: classesLoading } = useClasses();
   const { teachers, isLoading: teachersLoading } = useTeachers();
   const { schedules, isLoading: schedulesLoading, fetchSchedules, createSchedule, updateSchedule, deleteSchedule } = useSchedules();
+  const { assignments: teacherAssignments, fetchAssignments: fetchTeacherAssignments } = useTeacherAssignment();
+  const { academicYear } = useAppState();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -44,17 +48,39 @@ export default function ClassRoutinePage() {
     }
   }, [teachers, formTeacherId]);
 
+  // Fetch teacher assignments to filter subjects
+  useEffect(() => {
+    fetchTeacherAssignments({ academic_year: academicYear, limit: 1000 });
+  }, [fetchTeacherAssignments, academicYear]);
+
   // Load subjects for the selected class in the form
   const { subjects: formSubjects } = useSubjects(formClassId);
 
-  // Auto-select first subject when class or subject list changes
+  // Filter subjects to show only teacher's assigned subjects for this class
+  const filteredRoutineSubjects = useMemo(() => {
+    if (!formTeacherId || !formClassId) return [];
+
+    const matches = teacherAssignments.filter(a => {
+      const tId = typeof a.teacher_id === "object" ? a.teacher_id?._id : a.teacher_id;
+      const cId = typeof a.class_id === "object" ? a.class_id?._id : a.class_id;
+      return tId === formTeacherId && cId === formClassId;
+    });
+
+    const assignedSubjectNames = matches.map(a => 
+      typeof a.subject_master_id === "object" ? a.subject_master_id?.name : a.subject_master_id
+    ).filter(Boolean);
+
+    return formSubjects.filter(sub => assignedSubjectNames.includes(sub.name));
+  }, [formSubjects, teacherAssignments, formTeacherId, formClassId]);
+
+  // Auto-select first subject when filtered subjects list changes
   useEffect(() => {
-    if (formSubjects.length > 0) {
-      setFormSubject(formSubjects[0].name);
+    if (filteredRoutineSubjects.length > 0) {
+      setFormSubject(filteredRoutineSubjects[0].name);
     } else {
       setFormSubject("");
     }
-  }, [formSubjects]);
+  }, [filteredRoutineSubjects]);
 
   const openAddModal = () => {
     if (classes.length > 0) setFormClassId(classes[0]._id);
@@ -79,9 +105,45 @@ export default function ClassRoutinePage() {
     setActionMenuId(null);
   };
 
+  const checkConflicts = (routineId: string | null, classId: string, teacherId: string, day: string, startTime: string, endTime: string) => {
+    const dayNormalized = day.toLowerCase();
+
+    // 1. Same Class + Same Time + Same Day duplicate routine check
+    const classConflict = schedules.find(s => {
+      if (s._id === routineId) return false;
+      const cId = typeof s.class_id === "object" ? s.class_id?._id : s.class_id;
+      return cId === classId && s.day?.toLowerCase() === dayNormalized && s.start_time === startTime;
+    });
+
+    if (classConflict) {
+      return "This class already has a scheduled routine at this day and start time.";
+    }
+
+    // 2. Same Teacher + Same Time + Same Day conflict check (Teacher cannot be in multiple classes at same time)
+    const teacherConflict = schedules.find(s => {
+      if (s._id === routineId) return false;
+      const tId = typeof s.teacher_id === "object" ? s.teacher_id?._id : s.teacher_id;
+      return tId === teacherId && s.day?.toLowerCase() === dayNormalized && s.start_time === startTime;
+    });
+
+    if (teacherConflict) {
+      const clsName = typeof teacherConflict.class_id === "object" ? teacherConflict.class_id?.name : "another class";
+      return `This teacher is already assigned to ${clsName} at this day and start time.`;
+    }
+
+    return null;
+  };
+
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
+    const conflictError = checkConflicts(null, formClassId, formTeacherId, formDay, formStartTime, formEndTime);
+    if (conflictError) {
+      setFormError(conflictError);
+      return;
+    }
+
     const res = await createSchedule({
       classId: formClassId,
       subject: formSubject,
@@ -102,6 +164,13 @@ export default function ClassRoutinePage() {
     e.preventDefault();
     if (!selectedRoutineId) return;
     setFormError(null);
+
+    const conflictError = checkConflicts(selectedRoutineId, formClassId, formTeacherId, formDay, formStartTime, formEndTime);
+    if (conflictError) {
+      setFormError(conflictError);
+      return;
+    }
+
     const res = await updateSchedule(selectedRoutineId, {
       classId: formClassId,
       subject: formSubject,
@@ -187,6 +256,13 @@ export default function ClassRoutinePage() {
             <Plus className="w-4 h-4" /> Add Class Routine
           </button>
         </div>
+      </div>
+
+      {/* Clarification Banner */}
+      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 rounded-xl p-4 text-left">
+        <p className="text-[13px] text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
+          <strong>ℹ Class Routine:</strong> Use this module to define and manage individual recurring class periods (Teacher → Class → Subject → Day/Time mapping). This is the data source that builds the school timetable.
+        </p>
       </div>
 
       {/* Main Content */}
@@ -279,6 +355,21 @@ export default function ClassRoutinePage() {
         <form onSubmit={isAddOpen ? handleAddSubmit : handleEditSubmit} className="p-0 space-y-5 text-left">
 
           <div className="space-y-1.5">
+            <label className="text-[13px] font-bold text-slate-800 dark:text-slate-100">Teacher</label>
+            <div className="relative">
+              <select
+                value={formTeacherId}
+                onChange={(e) => setFormTeacherId(e.target.value)}
+                className="w-full px-4 py-2.5 text-[14px] bg-white dark:bg-slate-900 border border-border rounded-lg outline-none focus:border-primary transition-colors appearance-none text-slate-700 dark:text-slate-200 cursor-pointer"
+                required
+              >
+                {teachers.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
             <label className="text-[13px] font-bold text-slate-800 dark:text-slate-100">Class</label>
             <div className="relative">
               <select
@@ -296,7 +387,7 @@ export default function ClassRoutinePage() {
           <div className="space-y-1.5">
             <label className="text-[13px] font-bold text-slate-800 dark:text-slate-100">Subject</label>
             <div className="relative">
-              {formSubjects.length > 0 ? (
+              {filteredRoutineSubjects.length > 0 ? (
                 <select
                   value={formSubject}
                   onChange={(e) => setFormSubject(e.target.value)}
@@ -304,33 +395,18 @@ export default function ClassRoutinePage() {
                   required
                 >
                   <option value="">Select Subject</option>
-                  {formSubjects.map(s => (
+                  {filteredRoutineSubjects.map(s => (
                     <option key={s._id} value={s.name}>{s.name}</option>
                   ))}
                 </select>
               ) : (
-                <div className="w-full px-4 py-2.5 text-[13px] bg-slate-50 dark:bg-slate-800/50 border border-border rounded-lg text-slate-400 dark:text-slate-500 italic">
-                  No subjects available for this class — add subjects first
+                <div className="w-full px-4 py-2.5 text-[13px] bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 rounded-lg italic font-medium">
+                  No assigned subjects found for this Teacher + Class. Please assign subjects in Teacher Assignment first.
                 </div>
               )}
-              {formSubjects.length > 0 && (
+              {filteredRoutineSubjects.length > 0 && (
                 <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               )}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[13px] font-bold text-slate-800 dark:text-slate-100">Teacher</label>
-            <div className="relative">
-              <select
-                value={formTeacherId}
-                onChange={(e) => setFormTeacherId(e.target.value)}
-                className="w-full px-4 py-2.5 text-[14px] bg-white dark:bg-slate-900 border border-border rounded-lg outline-none focus:border-primary transition-colors appearance-none text-slate-700 dark:text-slate-200 cursor-pointer"
-                required
-              >
-                {teachers.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-              </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 

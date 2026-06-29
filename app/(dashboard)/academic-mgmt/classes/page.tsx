@@ -148,9 +148,7 @@ export default function AcademicClassesPage() {
 
   const openDelete = (cls: ApiClass) => {
     setSelectedClass(cls); setIsDeleteOpen(true); setActionMenuId(null);
-  };
-
-  const handleAddSubmit = async (e: React.FormEvent) => {
+  };  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formAcademicYear.trim()) {
       setFormError("Class name and academic year are required."); return;
@@ -176,8 +174,8 @@ export default function AcademicClassesPage() {
           academic_year: formAcademicYear.trim(),
           class_teacher_id: formTeacherId || undefined,
           capacity: parseInt(formCapacity) || 40,
-          ...(formClassCode ? { class_code: formClassCode.trim().toUpperCase() } : {}),
-          ...(({ status: formStatus } as any)),
+          class_code: formClassCode.trim().toUpperCase() || undefined,
+          status: formStatus
         } as any);
         if (!result.success) {
           hasError = true;
@@ -214,14 +212,37 @@ export default function AcademicClassesPage() {
       academic_year: formAcademicYear.trim(),
       class_teacher_id: formTeacherId || undefined,
       capacity: parseInt(formCapacity) || 40,
-      ...(formClassCode ? { class_code: formClassCode.trim().toUpperCase() } : {}),
-      ...(({ status: formStatus } as any)),
+      class_code: formClassCode.trim().toUpperCase() || "",
+      status: formStatus
     } as any);
     setSubmitting(false);
     if (result.success) { setIsEditOpen(false); resetForm(); doFetch(); }
     else setFormError(result.message);
   };
 
+  const sortedClasses = React.useMemo(() => {
+    const parseClassName = (name: string) => {
+      if (name.startsWith("Nursery")) return 1;
+      if (name.startsWith("LKG")) return 2;
+      if (name.startsWith("UKG")) return 3;
+      const match = name.match(/Class\s+(\d+)/i);
+      if (match) {
+        return 4 + parseInt(match[1]);
+      }
+      return 100;
+    };
+
+    return [...classes].sort((a, b) => {
+      const valA = parseClassName(a.name);
+      const valB = parseClassName(b.name);
+      if (valA !== valB) {
+        return sortOrder === "asc" ? valA - valB : valB - valA;
+      }
+      const nameComp = a.name.localeCompare(b.name);
+      if (nameComp !== 0) return sortOrder === "asc" ? nameComp : -nameComp;
+      return a.section.localeCompare(b.section);
+    });
+  }, [classes, sortOrder]);
   const handleDelete = async () => {
     if (!selectedClass) return;
     setSubmitting(true);
@@ -410,7 +431,7 @@ export default function AcademicClassesPage() {
           </div>
         ) : (
           <>
-            <DataTable columns={columns} data={classes}
+            <DataTable columns={columns} data={sortedClasses}
               selectionHeader={<input type="checkbox" className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4" />}
               renderSelection={() => <input type="checkbox" className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4" />}
             />

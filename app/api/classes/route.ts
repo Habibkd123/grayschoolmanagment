@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
 
     const body = await req.json();
-    const { name, section, academic_year, class_teacher_id, capacity } = body;
+    const { name, section, academic_year, class_teacher_id, capacity, class_code } = body;
 
     if (!name || !academic_year) {
       return NextResponse.json(
@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
       academic_year: academic_year.trim(),
       class_teacher_id: class_teacher_id || null,
       capacity: capacity ? parseInt(capacity) : 40,
+      class_code: class_code?.trim().toUpperCase() || undefined,
     });
 
     const populated = await newClass.populate("class_teacher_id", "name employee_id");

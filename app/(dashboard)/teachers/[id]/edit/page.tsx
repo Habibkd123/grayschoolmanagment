@@ -326,9 +326,7 @@ export default function EditTeacherPage() {
   const [uploadingResume, setUploadingResume] = useState(false);
   const [uploadingLetter, setUploadingLetter] = useState(false);
 
-  // New Password Fields (for creation / reset)
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+
 
   useEffect(() => {
     if (!editId) return;
@@ -446,12 +444,6 @@ export default function EditTeacherPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (newPassword && newPassword !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
     setIsSubmitting(true);
 
     const payload = {
@@ -506,8 +498,7 @@ export default function EditTeacherPage() {
       twitter_url: twitterUrl || undefined,
       photo_url: photoUrl || undefined,
       resume_url: resumeUrl || undefined,
-      joining_letter_url: joiningLetterUrl || undefined,
-      password: newPassword || undefined
+      joining_letter_url: joiningLetterUrl || undefined
     };
 
     if (editId) {
@@ -730,17 +721,7 @@ export default function EditTeacherPage() {
           </div>
         </div>
 
-        {/* 9. Password Option */}
-        <div className="bg-white dark:bg-slate-900 border border-border rounded-xl overflow-hidden card-shadow">
-          <div className="bg-slate-50/80 dark:bg-slate-800/40 px-6 py-4 border-b border-border flex items-center gap-2 text-left">
-            <Lock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            <h2 className="text-[14px] font-bold text-slate-800 dark:text-slate-100">Change Password</h2>
-          </div>
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-            <InputGroup label="New Password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Only fill to reset password" />
-            <InputGroup label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat new password" />
-          </div>
-        </div>
+
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-4 pt-2">

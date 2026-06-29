@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import LandingContent from "@/lib/models/LandingContent";
 import School from "@/lib/models/School";
@@ -7,6 +8,14 @@ import { requireAuth } from "@/lib/utils/auth";
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
+
+async function findSchoolByIdOrSlug(idOrSlug: string) {
+  if (mongoose.isValidObjectId(idOrSlug)) {
+    const school = await School.findById(idOrSlug).lean();
+    if (school) return school;
+  }
+  return await School.findOne({ slug: idOrSlug }).lean();
+}
 
 // GET /api/schools/[id]/landing — super admin fetch any school's landing content
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -17,7 +26,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     await connectDB();
-    const school = await School.findOne({ slug: id }).lean();
+    const school = await findSchoolByIdOrSlug(id);
     if (!school) {
       return NextResponse.json({ success: false, message: "School not found" }, { status: 404 });
     }
@@ -39,7 +48,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
   try {
     await connectDB();
-    const school = await School.findOne({ slug: id }).lean();
+    const school = await findSchoolByIdOrSlug(id);
     if (!school) {
       return NextResponse.json({ success: false, message: "School not found" }, { status: 404 });
     }
@@ -74,7 +83,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   try {
     await connectDB();
-    const school = await School.findOne({ slug: id }).lean();
+    const school = await findSchoolByIdOrSlug(id);
     if (!school) {
       return NextResponse.json({ success: false, message: "School not found" }, { status: 404 });
     }

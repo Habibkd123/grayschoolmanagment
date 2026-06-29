@@ -98,7 +98,7 @@ input,
 select,
 textarea {
   font-family: var(--font-family-base);
-  color: #231F20;
+  color: inherit;
 }
 
 h1,
@@ -147,14 +147,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Ensure white and light card backgrounds always show dark text */
-.bg-white,
-.bg-slate-50,
-.bg-gray-50,
-.bg-\[\#F8FAFC\],
-.bg-\[\#F9FAFB\] {
-  color: #231F20;
-}
+
 
 /* ── Utility Classes ─────────────────────────────────── */
 .card-shadow {

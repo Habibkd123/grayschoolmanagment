@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useStudents } from "../../hooks/useStudents";
 import { useTeachers } from "../../hooks/useTeachers";
@@ -16,6 +16,7 @@ import { useResults } from "../../hooks/useResults";
 import { getAuthHeaders, getStoredUser } from "@/lib/utils/session";
 import { useLeave } from "../../hooks/useLeave";
 import { useSubjects } from "../../hooks/useSubjects";
+import { useTeacherAssignment } from "../../hooks/useTeacherAssignment";
 import { useParent } from "../../hooks/useParent";
 import { ParentOverview } from "../../components/parent/ParentOverview";
 import { LineChart, BarChart, DoughnutChart } from "../../components/ui/charts";
@@ -83,6 +84,49 @@ export default function DashboardPage() {
   const { academicYear } = useAppState();
   // Parent portal only
   const { children, selectedChildId, setSelectedChildId, isLoading: parentLoading } = useParent({ skip: !isParent });
+
+  const { assignments: teacherAssignments, fetchAssignments } = useTeacherAssignment();
+  const [syllabusProgress, setSyllabusProgress] = useState({ completed: 0, pending: 100, total: 0 });
+
+  useEffect(() => {
+    if (isTeacher && user?.id) {
+      fetchAssignments({ teacher_id: user.id, academic_year: academicYear, limit: 100 });
+    }
+  }, [isTeacher, user?.id, academicYear, fetchAssignments]);
+
+  useEffect(() => {
+    if (isTeacher && teacherAssignments.length > 0) {
+      const loadAllSyllabus = async () => {
+        let totalChapters = 0;
+        let completedChapters = 0;
+        try {
+          const promises = teacherAssignments.map(async (a) => {
+            const res = await fetch(`/api/syllabus?teacher_assignment_id=${a._id}`, { headers: getAuthHeaders() });
+            const data = await res.json();
+            if (data.success && data.data && data.data.chapters) {
+              const chapters = data.data.chapters;
+              totalChapters += chapters.length;
+              completedChapters += chapters.filter((c: any) => c.status === "Completed").length;
+            }
+          });
+          await Promise.all(promises);
+          if (totalChapters > 0) {
+            const pct = Math.round((completedChapters / totalChapters) * 100);
+            setSyllabusProgress({
+              completed: pct,
+              pending: 100 - pct,
+              total: totalChapters
+            });
+          } else {
+            setSyllabusProgress({ completed: 0, pending: 100, total: 0 });
+          }
+        } catch (err) {
+          console.error("Error loading syllabus progress:", err);
+        }
+      };
+      loadAllSyllabus();
+    }
+  }, [isTeacher, teacherAssignments]);
 
   const [attendanceTab, setAttendanceTab] = useState<'Students' | 'Teachers' | 'Staff'>('Students');
 
@@ -197,8 +241,37 @@ export default function DashboardPage() {
   // ----------------------------------------------------
   // TEACHER LOGIC (uses real API data where available)
   // ----------------------------------------------------
-  const teacher = teachers[0];
-  const assignedClass = classes[0];
+  const teacher = teachers.find(t => {
+    const tUserId = typeof t.user_id === 'object' && t.user_id ? t.user_id._id : t.user_id;
+    return tUserId === user?.id;
+  }) || teachers[0];
+
+  const myClassTeacherClasses = useMemo(() => {
+    if (!user || storedRole !== "teacher") return [];
+    return classes.filter(c => {
+      const teacherId = typeof c.class_teacher_id === 'object' ? c.class_teacher_id?._id : c.class_teacher_id;
+      return teacherId === user?.id;
+    });
+  }, [classes, user, storedRole]);
+
+  const teacherHomework = useMemo(() => homework.filter(hw => {
+    const tId = typeof hw.teacher_id === 'object' ? hw.teacher_id?._id : hw.teacher_id;
+    return tId === user?.id;
+  }), [homework, user?.id]);
+
+  const pendingSubmissions = useMemo(() => {
+    let count = 0;
+    teacherHomework.forEach(hw => {
+      hw.submissions?.forEach(sub => {
+        if (!sub.grade) {
+          count++;
+        }
+      });
+    });
+    return count;
+  }, [teacherHomework]);
+
+  const assignedClass = myClassTeacherClasses[0] || classes[0];
   const classStudents = assignedClass
     ? students.filter((s) => {
       const cId = typeof s.class_id === "object" ? s.class_id?._id : s?.class_id;
@@ -207,7 +280,6 @@ export default function DashboardPage() {
     : [];
 
   const todayAttendanceRate = 90; // Placeholder — wire to useAttendance for real data
-  const pendingSubmissions = homework.length; // Placeholder count
 
   const classGradeStats = [
     { label: "English", value: 87 },
@@ -1096,29 +1168,47 @@ export default function DashboardPage() {
                 <p className="text-[11px] text-slate-300 mt-0.5 line-clamp-1" title={`Classes : ${uniqueClasses.join(', ')} • ${uniqueSubjects.join(', ')}`}>
                   Classes : {uniqueClasses.length > 0 ? uniqueClasses.slice(0, 2).join(', ') : "None"}  <span className="mx-1">•</span> {uniqueSubjects.length > 0 ? uniqueSubjects[0] : "No Subject"}
                 </p>
+                {myClassTeacherClasses.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {myClassTeacherClasses.map(c => (
+                      <span key={c._id} className="bg-emerald-500/25 text-emerald-300 text-[9px] font-bold px-2 py-0.5 rounded border border-emerald-500/30">
+                        CT: {c.name}-{c.section}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-              <button className="absolute bottom-4 right-4 bg-primary text-white text-[11px] font-bold px-3 py-1.5 rounded z-10 hover:bg-[var(--primary-hover)]">
-                Edit Profile
-              </button>
             </div>
 
             {/* Syllabus Progress */}
             <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-border rounded-xl p-5 card-shadow flex items-center justify-between text-left">
               <div className="w-full sm:w-[80px] h-[80px] relative shrink-0">
                 <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--danger)" strokeWidth="16" />
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" strokeWidth="16" strokeDasharray="251.2" strokeDashoffset="12.56" />
-                  {/* ~95% filled */}
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--danger)" strokeWidth="16" className="opacity-10" />
+                  <circle 
+                    cx="50" 
+                    cy="50" 
+                    r="40" 
+                    fill="none" 
+                    stroke="var(--primary)" 
+                    strokeWidth="16" 
+                    strokeDasharray="251.2" 
+                    strokeDashoffset={251.2 * (1 - syllabusProgress.completed / 100)} 
+                    className="transition-all duration-500"
+                  />
                 </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-[13px] font-bold text-slate-700 dark:text-slate-300">
+                  {syllabusProgress.completed}%
+                </div>
               </div>
               <div className="flex-1 ml-6">
-                <h3 className="text-[14px] font-bold text-slate-900 dark:text-white mb-3">Syllabus</h3>
+                <h3 className="text-[14px] font-bold text-slate-900 dark:text-white mb-3">Syllabus Progress</h3>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-                    <span className="w-2 h-2 rounded-full bg-primary"></span> Completed : 95%
+                    <span className="w-2 h-2 rounded-full bg-primary"></span> Completed: {syllabusProgress.completed}%
                   </div>
                   <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-                    <span className="w-2 h-2 rounded-full bg-danger"></span> Pending : 5%
+                    <span className="w-2 h-2 rounded-full bg-danger"></span> Pending: {syllabusProgress.pending}%
                   </div>
                 </div>
               </div>

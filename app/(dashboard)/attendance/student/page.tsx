@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Search, Loader2, AlertCircle, Save, Calendar, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useStudentAttendance, StudentAttendanceRecord } from "@/app/hooks/useStudentAttendance";
 import { useClasses } from "@/app/hooks/useClasses";
@@ -9,10 +9,12 @@ import { useSections } from "@/app/hooks/useSections";
 import { useStudents } from "@/app/hooks/useStudents";
 import { useAcademicConfig } from "@/app/hooks/useAcademicConfig";
 import { useAppState } from "@/app/context/store";
+import { useAuth } from "@/app/context/auth";
 
 export default function StudentAttendancePage() {
   const { academicYear } = useAppState();
   const { enableStreams, enableSections } = useAcademicConfig();
+  const { user } = useAuth();
 
   const { attendance, isLoading: loadingAttendance, error, fetchAttendance, saveAttendance } = useStudentAttendance();
   const { classes } = useClasses({ filterByYear: true });
@@ -27,6 +29,22 @@ export default function StudentAttendancePage() {
   const [filterStreamId, setFilterStreamId] = useState("");
   const [filterSectionId, setFilterSectionId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+
+  const visibleClasses = useMemo(() => {
+    if (!user) return [];
+    if (user.role === "school_admin" || user.role === "super_admin") return classes;
+    return classes.filter(c => {
+      const teacherId = typeof c.class_teacher_id === 'object' ? c.class_teacher_id?._id : c.class_teacher_id;
+      return teacherId === user.id;
+    });
+  }, [classes, user]);
+
+  // Auto-select class
+  useEffect(() => {
+    if (visibleClasses.length > 0 && !filterClassId) {
+      setFilterClassId(visibleClasses[0]._id);
+    }
+  }, [visibleClasses, filterClassId]);
 
   // Attendance State
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, { status: string; note: string }>>({});
@@ -139,6 +157,14 @@ export default function StudentAttendancePage() {
         </div>
       </div>
 
+      {user?.role === "teacher" && (
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-xl p-4 text-left">
+          <p className="text-[13px] text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
+            <strong>ℹ Teacher Attendance:</strong> You can only take attendance for classes you are assigned to as a <strong>Class Teacher</strong>. If you do not see a class in the dropdown, please contact the school administrator to assign you as its Class Teacher.
+          </p>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-white dark:bg-slate-900 border border-border rounded-xl p-4 card-shadow">
         <div className="flex flex-wrap items-end gap-4">
@@ -152,7 +178,7 @@ export default function StudentAttendancePage() {
             <select value={filterClassId} onChange={(e) => setFilterClassId(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-lg text-[13px] outline-none focus:border-primary bg-white dark:bg-slate-900 font-medium">
               <option value="">Select Class</option>
-              {classes.map(c => <option key={c._id} value={c._id}>{c.name}{c.section ? ` - ${c.section}` : ""}</option>)}
+              {visibleClasses.map(c => <option key={c._id} value={c._id}>{c.name}{c.section ? ` - ${c.section}` : ""}</option>)}
             </select>
           </div>
           {enableStreams && (

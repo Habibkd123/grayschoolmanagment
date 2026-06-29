@@ -9,6 +9,7 @@ import { Modal } from "@/app/components/ui/modal";
 import { DataTable, ColumnDef } from "@/app/components/ui/data-table";
 import { useTeacherAssignment, PopulatedTeacherAssignment } from "@/app/hooks/useTeacherAssignment";
 import { useSubjectMaster } from "@/app/hooks/useSubjectMaster";
+import { useSubjectAssignment } from "@/app/hooks/useSubjectAssignment";
 import { useStreams } from "@/app/hooks/useStreams";
 import { useSections } from "@/app/hooks/useSections";
 import { useClasses } from "@/app/hooks/useClasses";
@@ -27,6 +28,7 @@ export default function TeacherAssignmentPage() {
 
   const { assignments, isLoading, error, fetchAssignments, createAssignment, deleteAssignment } = useTeacherAssignment();
   const { subjects: subjectList } = useSubjectMaster();
+  const { assignments: subjectAssignments, fetchAssignments: fetchSubjectAssignments } = useSubjectAssignment();
   const { streams } = useStreams({ skip: !enableStreams });
   const { sections } = useSections({ skip: !enableSections });
   const { classes } = useClasses({ filterByYear: true });
@@ -67,6 +69,11 @@ export default function TeacherAssignmentPage() {
   }, [fetchAssignments, filterClassId, filterStreamId, filterSectionId, filterTeacherId, filterYear]);
 
   useEffect(() => { doFetch(); }, [doFetch]);
+
+  // Fetch subject assignments to filter by class
+  useEffect(() => {
+    fetchSubjectAssignments({ academic_year: academicYear, limit: 1000 });
+  }, [fetchSubjectAssignments, academicYear]);
 
   // Trigger auto stream and section selection on class select
   useEffect(() => {
@@ -141,18 +148,29 @@ export default function TeacherAssignmentPage() {
   }, [formClassId, classes, streams, enableStreams]);
 
   const filteredSubjectList = useMemo(() => {
+    if (!formClassId) return [];
+
+    // Find all subject assignments for the selected class (+ stream if applicable)
     const selectedClass = classes.find(c => c._id === formClassId);
     const isHigherClass = selectedClass ? (selectedClass.name.startsWith("Class 11") || selectedClass.name.startsWith("Class 12")) : false;
+    const streamVal = enableStreams && isHigherClass && formStreamId ? formStreamId : undefined;
 
-    if (!enableStreams || !formStreamId || !isHigherClass) return subjectList;
-
-    return subjectList.filter(s => {
-      // Common subject (not restricted to any stream)
-      if (!s.allowed_streams || s.allowed_streams.length === 0) return true;
-      // Stream-specific subject
-      return s.allowed_streams.includes(formStreamId);
+    const classAssignments = subjectAssignments.filter(a => {
+      const aClassId = typeof a.class_id === "object" ? a.class_id?._id : a.class_id;
+      const aStreamId = typeof a.stream_id === "object" ? a.stream_id?._id : a.stream_id;
+      
+      const matchClass = aClassId === formClassId;
+      const matchStream = !streamVal || aStreamId === streamVal;
+      return matchClass && matchStream;
     });
-  }, [subjectList, formStreamId, enableStreams, formClassId, classes]);
+
+    // Map these assignments to actual subject master documents
+    const assignedSubjectIds = classAssignments.map(a => 
+      typeof a.subject_master_id === "object" ? a.subject_master_id?._id : a.subject_master_id
+    );
+
+    return subjectList.filter(s => assignedSubjectIds.includes(s._id));
+  }, [subjectList, subjectAssignments, formClassId, formStreamId, classes, enableStreams]);
 
   const resetForm = () => {
     setFormYear(academicYear);
@@ -368,7 +386,7 @@ export default function TeacherAssignmentPage() {
             <User className="w-10 h-10 opacity-30" />
             <p className="text-[14px] font-medium">No teacher assignments found</p>
             {isAdmin && (
-              <button onClick={() => { resetForm(); setIsAddOpen(true); }} className="mt-2 px-4 py-2 text-[13px] font-bold bg-primary hover:bg-[#d68600] text-white rounded-lg">
+              <button onClick={() => { resetForm(); setIsAddOpen(true); }} className="mt-2 px-4 py-2 text-[13px] font-bold bg-primary hover:bg-[var(--primary-hover)] text-white rounded-lg transition-colors">
                 Assign First Teacher
               </button>
             )}

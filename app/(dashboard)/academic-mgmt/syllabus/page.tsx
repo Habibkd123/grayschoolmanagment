@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus, Search, Loader2, AlertCircle, Trash2, Edit2, CheckCircle2, Circle, PlayCircle, BookOpen, User, GraduationCap } from "lucide-react";
 import { Modal } from "@/app/components/ui/modal";
 import { useTeacherAssignment, PopulatedTeacherAssignment } from "@/app/hooks/useTeacherAssignment";
@@ -20,6 +20,14 @@ export default function SyllabusManagementPage() {
 
   const [selectedAssignment, setSelectedAssignment] = useState<string>("");
   const [activeAssignment, setActiveAssignment] = useState<PopulatedTeacherAssignment | null>(null);
+
+  const visibleAssignments = useMemo(() => {
+    if (isAdmin) return assignments;
+    return assignments.filter(a => {
+      const tId = typeof a.teacher_id === "object" ? a.teacher_id?._id : a.teacher_id;
+      return tId === user?.id;
+    });
+  }, [assignments, isAdmin, user?.id]);
 
   // Form states for new/edit chapter
   const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
@@ -159,7 +167,7 @@ export default function SyllabusManagementPage() {
             className="w-full md:w-2/3 px-4 py-3 border border-border rounded-lg text-[14px] outline-none focus:border-primary bg-[#F8FAFC] dark:bg-[var(--sidebar-bg)] font-medium"
           >
             <option value="">-- Choose an Assignment --</option>
-            {assignments.map(a => (
+            {visibleAssignments.map(a => (
               <option key={a._id} value={a._id}>
                 {a.class_id?.name} {a.stream_id ? `(${a.stream_id.name})` : ''} {a.section_id ? `- ${a.section_id.name}` : ''} | {a.subject_master_id?.name} | Teacher: {a.teacher_id?.name}
               </option>
@@ -169,95 +177,99 @@ export default function SyllabusManagementPage() {
       </div>
 
       {/* Syllabus Content */}
-      {selectedAssignment && activeAssignment && (
-        <div className="bg-white dark:bg-slate-900 border border-border rounded-xl card-shadow overflow-hidden">
-          {/* Syllabus Header */}
-          <div className="p-5 border-b border-border bg-slate-50 dark:bg-slate-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2.5 py-1 rounded text-xs font-bold tracking-wide">
-                  {activeAssignment.class_id?.name}
-                  {activeAssignment.stream_id ? ` - ${activeAssignment.stream_id.name}` : ''}
-                  {activeAssignment.section_id ? ` (${activeAssignment.section_id.name})` : ''}
-                </span>
-                <span className="bg-primary/10 text-primary px-2.5 py-1 rounded text-xs font-bold tracking-wide flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5" /> {activeAssignment.subject_master_id?.name}
-                </span>
+      {selectedAssignment && activeAssignment && (() => {
+        const canManage = isAdmin || (activeAssignment && (typeof activeAssignment.teacher_id === 'object' ? activeAssignment.teacher_id?._id === user?.id : activeAssignment.teacher_id === user?.id));
+        return (
+          <div className="bg-white dark:bg-slate-900 border border-border rounded-xl card-shadow overflow-hidden">
+            {/* Syllabus Header */}
+            <div className="p-5 border-b border-border bg-slate-50 dark:bg-slate-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2.5 py-1 rounded text-xs font-bold tracking-wide">
+                    {activeAssignment.class_id?.name}
+                    {activeAssignment.stream_id ? ` - ${activeAssignment.stream_id.name}` : ''}
+                    {activeAssignment.section_id ? ` (${activeAssignment.section_id.name})` : ''}
+                  </span>
+                  <span className="bg-primary/10 text-primary px-2.5 py-1 rounded text-xs font-bold tracking-wide flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5" /> {activeAssignment.subject_master_id?.name}
+                  </span>
+                </div>
+                <p className="text-sm font-medium flex items-center gap-2 mt-2 text-slate-600 dark:text-slate-300">
+                  <User className="w-4 h-4 text-slate-400" /> Taught by <b>{activeAssignment.teacher_id?.name}</b>
+                </p>
               </div>
-              <p className="text-sm font-medium flex items-center gap-2 mt-2 text-slate-600 dark:text-slate-300">
-                <User className="w-4 h-4 text-slate-400" /> Taught by <b>{activeAssignment.teacher_id?.name}</b>
-              </p>
+              {canManage && (
+                <button onClick={handleAddChapter} className="px-4 py-2 bg-primary hover:bg-[var(--primary-hover)] text-white text-[13px] font-bold rounded-lg shadow-sm transition-colors flex items-center gap-2 shrink-0">
+                  <Plus className="w-4 h-4" /> Add Chapter
+                </button>
+              )}
             </div>
-            {isAdmin && (
-              <button onClick={handleAddChapter} className="px-4 py-2 bg-primary hover:bg-[var(--primary-hover)] text-white text-[13px] font-bold rounded-lg shadow-sm transition-colors flex items-center gap-2 shrink-0">
-                <Plus className="w-4 h-4" /> Add Chapter
-              </button>
-            )}
-          </div>
 
-          {/* Chapters List */}
-          <div className="p-0">
-            {loadingSyllabus ? (
-              <div className="flex justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>
-            ) : syllabus?.chapters && syllabus.chapters.length > 0 ? (
-              <div className="divide-y divide-border">
-                {syllabus.chapters.map((ch, idx) => (
-                  <div key={idx} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
-                    <div className="flex items-start gap-4">
-                      <div className="mt-1">{getStatusIcon(ch.status)}</div>
-                      <div>
-                        <h4 className="text-[15px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                          <span className="text-slate-400 font-mono text-xs">CH {ch.chapter_no}</span>
-                          {ch.chapter_name}
-                        </h4>
-                        {ch.description && <p className="text-[13px] text-slate-500 mt-1 max-w-2xl">{ch.description}</p>}
-                        <div className="flex items-center gap-4 mt-2 text-[12px] font-medium text-slate-400">
-                          <span>Start: <span className="text-slate-600 dark:text-slate-300">{new Date(ch.start_date).toLocaleDateString()}</span></span>
-                          <span>Target: <span className="text-slate-600 dark:text-slate-300">{new Date(ch.target_date).toLocaleDateString()}</span></span>
+            {/* Chapters List */}
+            <div className="p-0">
+              {loadingSyllabus ? (
+                <div className="flex justify-center py-20 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>
+              ) : syllabus?.chapters && syllabus.chapters.length > 0 ? (
+                <div className="divide-y divide-border">
+                  {syllabus.chapters.map((ch, idx) => (
+                    <div key={idx} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
+                      <div className="flex items-start gap-4">
+                        <div className="mt-1">{getStatusIcon(ch.status)}</div>
+                        <div>
+                          <h4 className="text-[15px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span className="text-slate-400 font-mono text-xs">CH {ch.chapter_no}</span>
+                            {ch.chapter_name}
+                          </h4>
+                          {ch.description && <p className="text-[13px] text-slate-500 mt-1 max-w-2xl">{ch.description}</p>}
+                          <div className="flex items-center gap-4 mt-2 text-[12px] font-medium text-slate-400">
+                            {ch.start_date && <span>Start: <span className="text-slate-600 dark:text-slate-300">{new Date(ch.start_date).toLocaleDateString()}</span></span>}
+                            {ch.target_date && <span>Target: <span className="text-slate-600 dark:text-slate-300">{new Date(ch.target_date).toLocaleDateString()}</span></span>}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 md:ml-auto self-start md:self-auto">
-                      <select 
-                        value={ch.status} 
-                        onChange={(e) => handleStatusChange(idx, e.target.value as any)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-full border-0 outline-none appearance-none pr-8 bg-no-repeat bg-[right_10px_center] ${
-                          ch.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                          ch.status === 'In Progress' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                          'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-                        }`}
-                        style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundSize: '8px' }}
-                      >
-                        <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                      </select>
+                      
+                      <div className="flex items-center gap-3 md:ml-auto self-start md:self-auto">
+                        <select 
+                          disabled={!canManage}
+                          value={ch.status} 
+                          onChange={(e) => handleStatusChange(idx, e.target.value as any)}
+                          className={`text-xs font-bold px-3 py-1.5 rounded-full border-0 outline-none appearance-none pr-8 bg-no-repeat bg-[right_10px_center] ${
+                            ch.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                            ch.status === 'In Progress' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                          style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22currentColor%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundSize: '8px' }}
+                        >
+                          <option value="Not Started">Not Started</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                        </select>
 
-                      {isAdmin && (
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleEditChapter(idx, ch)} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDeleteChapter(idx)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                        {canManage && (
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => handleEditChapter(idx, ch)} className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleDeleteChapter(idx)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-                <BookOpen className="w-12 h-12 opacity-20 mb-3" />
-                <p className="text-sm font-medium">No chapters added yet.</p>
-                {isAdmin && <button onClick={handleAddChapter} className="mt-3 text-sm text-blue-500 hover:underline font-medium">Add first chapter</button>}
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+                  <BookOpen className="w-12 h-12 opacity-20 mb-3" />
+                  <p className="text-sm font-medium">No chapters added yet.</p>
+                  {canManage && <button onClick={handleAddChapter} className="mt-3 text-sm text-blue-500 hover:underline font-medium">Add first chapter</button>}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Add/Edit Chapter Modal */}
       <Modal isOpen={isChapterModalOpen} onClose={() => setIsChapterModalOpen(false)} title={editingIndex !== null ? "Edit Chapter" : "Add New Chapter"}>
@@ -289,15 +301,15 @@ export default function SyllabusManagementPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[13px] font-semibold">Start Date <span className="text-red-500">*</span></label>
-              <input type="date" required
+              <label className="text-[13px] font-semibold">Start Date <span className="text-slate-400 text-[11px]">(optional)</span></label>
+              <input type="date"
                 value={formChapter.start_date ? new Date(formChapter.start_date).toISOString().split('T')[0] : ''} 
                 onChange={(e) => setFormChapter({...formChapter, start_date: e.target.value})}
                 className="w-full px-3 py-2 border border-border rounded-lg text-[13px] outline-none focus:border-primary" />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[13px] font-semibold">Target Date <span className="text-red-500">*</span></label>
-              <input type="date" required
+              <label className="text-[13px] font-semibold">Target Date <span className="text-slate-400 text-[11px]">(optional)</span></label>
+              <input type="date"
                 value={formChapter.target_date ? new Date(formChapter.target_date).toISOString().split('T')[0] : ''} 
                 onChange={(e) => setFormChapter({...formChapter, target_date: e.target.value})}
                 className="w-full px-3 py-2 border border-border rounded-lg text-[13px] outline-none focus:border-primary" />

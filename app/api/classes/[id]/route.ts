@@ -42,7 +42,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     await connectToDatabase();
 
     const body = await req.json();
-    const { name, section, academic_year, class_teacher_id, capacity } = body;
+    const { name, section, academic_year, class_teacher_id, capacity, class_code } = body;
 
     const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name.trim();
@@ -50,6 +50,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     if (academic_year !== undefined) updateData.academic_year = academic_year.trim();
     if (class_teacher_id !== undefined) updateData.class_teacher_id = class_teacher_id || null;
     if (capacity !== undefined) updateData.capacity = parseInt(capacity);
+    if (class_code !== undefined) updateData.class_code = class_code?.trim().toUpperCase() || "";
 
     const updated = await Class.findOneAndUpdate(
       { _id: id, school_id: schoolId as string },

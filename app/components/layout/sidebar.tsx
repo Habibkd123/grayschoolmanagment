@@ -52,6 +52,7 @@ export const Sidebar = React.memo(function Sidebar({ isMobileOpen = false, onClo
         { name: "Subjects", href: "/academic-mgmt/subjects" },
         { name: "Subject Assignment", href: "/academic-mgmt/subject-assignment" },
         { name: "Teacher Assignment", href: "/academic-mgmt/teacher-assignment" },
+        { name: "Class Teacher", href: "/academic-mgmt/class-teacher" },
         { name: "Syllabus", href: "/academic-mgmt/syllabus" },
         // { name: "Class Room", href: "/academic/class-room" },
         { name: "Class Routine", href: "/academic/class-routine" },
@@ -74,6 +75,7 @@ export const Sidebar = React.memo(function Sidebar({ isMobileOpen = false, onClo
       name: "Attendance", icon: <Clock className="w-4 h-4" />, subItems: [
         { name: "Student Attendance", href: "/attendance/student" },
         { name: "Teacher Attendance", href: "/attendance/teacher" },
+        { name: "Class Teacher Assignment", href: "/academic-mgmt/class-teacher" },
         { name: "Reports", href: "/attendance/reports" }
       ]
     },
@@ -311,18 +313,18 @@ export const Sidebar = React.memo(function Sidebar({ isMobileOpen = false, onClo
                       setExpandedMenu(isExpanded && !isCollapsed ? null : link.name);
                     }}
                     className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} w-full ${isCollapsed ? 'px-0 py-3' : 'px-3 py-2.5'} text-[13px] rounded-lg transition-all duration-200 font-medium ${isChildActive && !isExpanded
-                      ? "bg-primary/10 text-primary"
-                      : "text-slate-400 dark:text-slate-500 hover:text-slate-200 hover:bg-slate-800/50"
+                      ? "bg-primary/10 !text-primary"
+                      : "!text-slate-400 hover:!text-slate-200 hover:bg-slate-800/50"
                       }`}
                     title={isCollapsed ? link.name : undefined}
                   >
                     <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                      <span className={`${isChildActive ? "text-primary" : "text-slate-400 dark:text-slate-500"}`}>
+                      <span className={`${isChildActive ? "!text-primary" : "!text-slate-400"}`}>
                         {link.icon}
                       </span>
-                      {!isCollapsed && <span>{link.name}</span>}
+                      {!isCollapsed && <span className={isChildActive ? "!text-primary" : "!text-slate-400"}>{link.name}</span>}
                     </div>
-                    {!isCollapsed && (isExpanded ? <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />)}
+                    {!isCollapsed && (isExpanded ? <ChevronDown className="w-4 h-4 !text-slate-400" /> : <ChevronRight className="w-4 h-4 !text-slate-400" />)}
                   </button>
 
                   {isExpanded && !isCollapsed && (
@@ -334,7 +336,7 @@ export const Sidebar = React.memo(function Sidebar({ isMobileOpen = false, onClo
                             key={sub.name}
                             href={sub.href}
                             onClick={onClose}
-                            className={`text-[12px] font-medium transition-colors py-1.5 ${isSubActive ? "text-primary" : "text-slate-500 dark:text-slate-400 hover:text-slate-300"
+                            className={`text-[12px] font-medium transition-colors py-1.5 ${isSubActive ? "!text-primary" : "!text-slate-400 hover:!text-slate-200"
                               }`}
                           >
                             {sub.name}
@@ -354,15 +356,15 @@ export const Sidebar = React.memo(function Sidebar({ isMobileOpen = false, onClo
                 href={(link as { href: string }).href}
                 onClick={onClose}
                 className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${isCollapsed ? 'px-0 py-3' : 'px-3 py-2.5'} text-[13px] rounded-lg transition-all duration-200 font-medium ${isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-slate-400 dark:text-slate-500 hover:text-slate-200 hover:bg-slate-800/50"
+                  ? "bg-primary/10 !text-primary"
+                  : "!text-slate-400 hover:!text-slate-200 hover:bg-slate-800/50"
                   }`}
                 title={isCollapsed ? link.name : undefined}
               >
-                <span className={`${isActive ? "text-primary" : "text-slate-400 dark:text-slate-500"}`}>
+                <span className={`${isActive ? "!text-primary" : "!text-slate-400"}`}>
                   {link.icon}
                 </span>
-                {!isCollapsed && <span>{link.name}</span>}
+                {!isCollapsed && <span className={isActive ? "!text-primary" : "!text-slate-400"}>{link.name}</span>}
               </Link>
             );
           })}
