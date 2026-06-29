@@ -41,6 +41,7 @@ interface EnabledPage {
   enabled: boolean;
   order: number;
   slug?: string;
+  isCustom?: boolean;
 }
 
 interface HeaderProps {
