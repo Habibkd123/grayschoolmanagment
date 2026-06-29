@@ -32,7 +32,6 @@ interface HeroData {
 function renderStatIcon(iconName: string) {
   const IconComponent = (LucideIcons as any)[iconName];
   if (IconComponent) return <IconComponent className="w-5 h-5" />;
-  // If it's an emoji or other character, just render as text
   return <span className="text-lg leading-none">{iconName}</span>;
 }
 
@@ -54,7 +53,6 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
   const videoUrl = about?.hero_video_url?.trim();
   const sideImageUrl = about?.hero_side_image_url?.trim();
 
-  // If tagline is empty, nothing to show in hero heading
   const taglineWords = tagline ? tagline.split(" ") : [];
   const splitIndex = Math.max(1, taglineWords.length - 3);
   const firstLine = taglineWords.slice(0, splitIndex).join(" ");
@@ -63,6 +61,8 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
   const showAffiliationBadge = sideImageUrl && (affiliationName || affiliationNumber || schoolCode);
   const showBottomBar = recognitionTags.length > 0;
   const showHeroBadge = (admissionOpen || foundedYear || admissionYearLabel);
+
+  const isDarkBg = !!backgroundImage;
 
   const sectionStyle = backgroundImage
     ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" }
@@ -74,11 +74,11 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
       className="relative overflow-hidden bg-white"
       style={sectionStyle}
     >
-      {/* Semi-transparent white overlay to keep text highly readable if bg image exists */}
+      {/* Semi-transparent themed overlay for background image */}
       {backgroundImage && (
         <div
           className="absolute inset-0 z-0 pointer-events-none"
-          style={{ backgroundColor: "color-mix(in oklab, #ffffff6b 90%, transparent)" }}
+          style={{ backgroundColor: "color-mix(in oklab, var(--primary) 75%, transparent)", backdropFilter: "blur(2px)" }}
         />
       )}
 
@@ -91,13 +91,19 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
         {/* Left — Text Content */}
         <div className="max-w-2xl">
 
-          {/* Top Badge — only if at least one piece of info is available */}
+          {/* Top Badge */}
           {showHeroBadge && (
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 border border-[#E0E0E0] bg-[var(--section-alt)] rounded-sm">
+            <div className={`inline-flex items-center gap-2 px-4 py-1.5 mb-6 border rounded-sm ${
+              isDarkBg 
+                ? "border-white/20 bg-white/10" 
+                : "border-[#E0E0E0] bg-[var(--section-alt)]"
+            }`}>
               {admissionOpen && (
                 <span className="w-2 h-2 rounded-full bg-[#1FC16B] animate-pulse" />
               )}
-              <span className="text-[11px] font-bold text-[#5C5D5D] uppercase tracking-widest">
+              <span className={`text-[11px] font-bold uppercase tracking-widest ${
+                isDarkBg ? "text-[var(--warning)]" : "text-[#5C5D5D]"
+              }`}>
                 {admissionOpen && "Admissions Open"}
                 {admissionOpen && (foundedYear || admissionYearLabel) && " · "}
                 {admissionYearLabel
@@ -109,18 +115,26 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
             </div>
           )}
 
-          {/* Heading — only if tagline exists */}
+          {/* Heading */}
           {tagline && (
-            <h1 className="text-4xl lg:text-6xl font-black text-[#231F20] leading-[1.1] mb-6">
+            <h1 className={`text-4xl lg:text-6xl font-black leading-[1.1] mb-6 ${
+              isDarkBg ? "text-white" : "text-[#231F20]"
+            }`}>
               {firstLine}
               <br />
-              <span className="text-[var(--primary)]">{secondLine}</span>
+              <span className={isDarkBg ? "text-[var(--warning)]" : "text-[var(--primary)]"}>
+                {secondLine}
+              </span>
             </h1>
           )}
 
           {/* Description */}
           {description && (
-            <p className="text-[15px] text-[#666666] mb-8 leading-relaxed font-medium max-w-lg border-l-4 border-[var(--primary)] pl-4">
+            <p className={`text-[15px] mb-8 leading-relaxed font-medium max-w-lg border-l-4 pl-4 ${
+              isDarkBg 
+                ? "text-white/90 border-[var(--warning)]" 
+                : "text-[#666666] border-[var(--primary)]"
+            }`}>
               {description}
             </p>
           )}
@@ -141,7 +155,11 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
                   href={videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-sm border-2 border-[#231F20] text-[#231F20] font-bold text-[14px] hover:bg-[#231F20] hover:text-white transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wide"
+                  className={`w-full sm:w-auto px-8 py-3.5 rounded-sm border-2 font-bold text-[14px] transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wide ${
+                    isDarkBg 
+                      ? "border-white/40 text-white hover:bg-white hover:text-[#231F20]" 
+                      : "border-[#231F20] text-[#231F20] hover:bg-[#231F20] hover:text-white"
+                  }`}
                 >
                   <Play className="w-4 h-4 text-[#FFD700]" fill="currentColor" /> Virtual Tour
                 </a>
@@ -149,44 +167,48 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
             </div>
           )}
 
-          {/* Stats Row — only from DB */}
+          {/* Stats Row */}
           {heroStats.length > 0 && (
-            <div className={`grid grid-cols-${Math.min(heroStats.length, 4)} gap-4 border-t border-[#E0E0E0] pt-8`}>
+            <div className={`grid grid-cols-${Math.min(heroStats.length, 4)} gap-4 border-t pt-8 ${
+              isDarkBg ? "border-white/10" : "border-[#E0E0E0]"
+            }`}>
               {heroStats.map((s, i) => (
                 <div key={i} className="text-center">
-                  <div className="flex justify-center mb-1 text-[var(--primary)]">
+                  <div className={`flex justify-center mb-1 ${
+                    isDarkBg ? "text-[var(--warning)]" : "text-[var(--primary)]"
+                  }`}>
                     {renderStatIcon(s.icon)}
                   </div>
-                  <div className="text-[22px] font-black text-[#231F20]">{s.value}</div>
-                  <div className="text-[11px] font-bold text-[#828283] uppercase tracking-wider">{s.label}</div>
+                  <div className={`text-[22px] font-black ${
+                    isDarkBg ? "text-white" : "text-[#231F20]"
+                  }`}>{s.value}</div>
+                  <div className={`text-[11px] font-bold uppercase tracking-wider ${
+                    isDarkBg ? "text-white/60" : "text-[#828283]"
+                  }`}>{s.label}</div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right — Image with decorative frame (only if side image uploaded) */}
+        {/* Right — Image with decorative frame */}
         {sideImageUrl && (
           <div className="relative hidden lg:block">
-            {/* Background shape */}
-            <div className="absolute -top-6 -right-6 w-full h-full bg-[#EFEFEF] rounded-sm z-0" />
-            {/* Red corner accent */}
+            <div className="absolute -top-6 -right-6 w-full h-full bg-[#EFEFEF] dark:bg-slate-800/40 rounded-sm z-0" />
             <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-[var(--primary)] z-0" />
-            {/* Gold dot pattern */}
             <div className="absolute top-4 right-4 w-16 h-16 z-10 grid grid-cols-4 gap-1.5">
               {Array.from({ length: 16 }).map((_, i) => (
                 <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#FFD700]" />
               ))}
             </div>
-            {/* Main Image */}
-            <div className="relative z-10 border-4 border-[#FFFFFF] shadow-2xl rounded-sm overflow-hidden">
+            <div className="relative z-10 border-4 border-[#FFFFFF] dark:border-slate-800 shadow-2xl rounded-sm overflow-hidden">
               <img
                 src={sideImageUrl}
                 alt="School campus"
                 loading="lazy"
                 className="w-full h-[480px] object-cover"
               />
-              {/* Bottom caption badge — only if affiliation/school data exists */}
+              {/* Bottom caption badge */}
               {showAffiliationBadge && (
                 <div className="absolute bottom-0 left-0 right-0 bg-[#231F20] text-white px-6 py-4 flex items-center justify-between">
                   {(affiliationName || affiliationNumber) && (
@@ -217,14 +239,22 @@ export function Hero({ data, backgroundImage }: { data?: HeroData | null; backgr
         )}
       </div>
 
-      {/* ── Bottom Recognition Bar — only if tags exist ────────────────── */}
+      {/* ── Bottom Recognition Bar ── */}
       {showBottomBar && (
-        <div className="w-full bg-[var(--section-alt)] py-4 border-t border-[#E0E0E0]">
+        <div className={`w-full py-4 border-t ${
+          isDarkBg 
+            ? "bg-black/30 border-white/10" 
+            : "bg-[var(--section-alt)] border-[#E0E0E0]"
+        }`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4">
-            <span className="text-[12px] font-bold text-[#828283] uppercase tracking-widest">
+            <span className={`text-[12px] font-bold uppercase tracking-widest ${
+              isDarkBg ? "text-white/60" : "text-[#828283]"
+            }`}>
               Recognized by:
             </span>
-            <div className="flex items-center gap-8 text-[12px] font-semibold text-[#5C5D5D] uppercase tracking-wider">
+            <div className={`flex items-center gap-8 text-[12px] font-semibold uppercase tracking-wider ${
+              isDarkBg ? "text-white/80" : "text-[#5C5D5D]"
+            }`}>
               {recognitionTags.map((tag) => (
                 <span key={tag} className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />

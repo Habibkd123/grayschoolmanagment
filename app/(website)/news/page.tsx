@@ -34,27 +34,35 @@ export default async function NewsPage() {
   return (
     <main className="w-full">
       {/* Hero */}
-      <section className="relative py-28 bg-white">
+      <section className="relative py-28 bg-slate-900">
         <div className="absolute inset-0">
           <img src={data?.news?.hero_image_url || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1920&auto=format&fit=crop"} alt="News" className="w-full h-full object-cover" style={{ filter: "blur(3px)", transform: "scale(1.05)" }} />
-          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, #ffffff6b 90%, transparent)" }} />
+          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, var(--primary) 75%, transparent)", backdropFilter: "blur(2px)" }} />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <span className="inline-block px-4 py-1.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Notice Board</span>
-          <h1 className="text-5xl md:text-6xl  font-bold text-[#231F20] font-sans font-black leading-tight">News & Circulars</h1>
+          <span className="inline-block px-4 py-1.5 bg-white/10 border border-white/20 text-[var(--warning)] font-extrabold text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Notice Board</span>
+          <h1 className="text-5xl md:text-6xl  font-bold text-white font-sans font-black leading-tight">News & Circulars</h1>
         </div>
       </section>
 
       {/* Filter tabs */}
-      <section className="py-6 bg-white border-b border-slate-200 sticky top-20 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-4 overflow-x-auto">
+      <section className="py-6 bg-slate-900 border-b border-slate-800 sticky top-20 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-3 overflow-x-auto">
           {[
-            { href: "/news", label: "All" },
-            { href: "/news/announcements", label: "Announcements" },
-            { href: "/news/circulars", label: "Circulars" },
-            { href: "/news/results", label: "Results" },
+            { href: "/news", label: "All", active: true },
+            { href: "/news/announcements", label: "Announcements", active: false },
+            { href: "/news/circulars", label: "Circulars", active: false },
+            { href: "/news/results", label: "Results", active: false },
           ].map(t => (
-            <Link key={t.href} href={t.href} className="px-5 py-2 text-[13px] font-bold uppercase tracking-wide rounded-sm whitespace-nowrap border border-slate-200 hover:bg-primary hover:text-white hover:border-primary transition-all">
+            <Link
+              key={t.href}
+              href={t.href}
+              className={`px-5 py-2 text-[13px] font-bold uppercase tracking-wide rounded-sm whitespace-nowrap transition-all border ${
+                t.active
+                  ? "bg-[var(--primary)] text-white border-[var(--primary)]"
+                  : "text-white/80 border-white/20 hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)]"
+              }`}
+            >
               {t.label}
             </Link>
           ))}

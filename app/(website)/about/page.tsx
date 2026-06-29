@@ -31,25 +31,25 @@ export default async function AboutPage() {
     <main className="w-full">
 
       {/* ── Hero Banner ── */}
-      <section className="relative py-32 bg-white overflow-hidden">
+      <section className="relative py-32 bg-slate-900 overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={about?.hero_image_url || "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1920&auto=format&fit=crop"}
             alt="School Building"
             className="w-full h-full object-cover" style={{ filter: "blur(3px)", transform: "scale(1.05)" }}
           />
-          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, #ffffff6b 90%, transparent)" }} />
+          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, var(--primary) 75%, transparent)", backdropFilter: "blur(2px)" }} />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <span className="inline-block px-4 py-1.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">
+          <span className="inline-block px-4 py-1.5 bg-white/10 border border-white/20 text-[var(--warning)] font-extrabold text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">
             About Us
           </span>
-          <h1 className="text-5xl md:text-6xl  font-bold text-[#231F20] font-sans font-black leading-tight mb-4">
+          <h1 className="text-5xl md:text-6xl  font-bold text-white font-sans font-black leading-tight mb-4">
             {tagline}
           </h1>
           {foundedYear && (
-            <p className="text-slate-600 text-[15px] mt-4 flex items-center justify-center gap-2">
-              <Calendar className="w-4 h-4 text-[var(--primary)]" />
+            <p className="text-white/80 text-[15px] mt-4 flex items-center justify-center gap-2">
+              <Calendar className="w-4 h-4 text-[var(--warning)]" />
               Established in {foundedYear} · {yearsLegacy}+ Years of Excellence
             </p>
           )}

@@ -822,7 +822,7 @@ export default function DashboardPage() {
                     <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--primary)" strokeWidth="20" />
                     <path d="M 85 50 A 40 40 0 0 0 90 50" fill="none" stroke="var(--success)" strokeWidth="20" />
                   </svg>
-                  <div className="absolute bottom-5 text-white text-[11px] font-bold">{attendanceRateMock}%</div>
+                  <div className="absolute bottom-5 text-slate-900 text-[11px] font-bold bg-white/80 px-1.5 py-0.5 rounded">{attendanceRateMock}%</div>
                 </div>
                 <div className="mt-4 flex justify-center">
                   <Link href="/attendance/student" className="bg-[#F1F3F5] dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-[12px] px-4 py-2 rounded-lg flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">

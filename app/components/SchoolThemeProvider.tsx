@@ -10,10 +10,13 @@ interface SchoolThemeProviderProps {
   children: React.ReactNode;
 }
 
+// Skip background/foreground — hardcoded light mode values in globals.css
+const SKIP_VARS = new Set(["--background", "--foreground"]);
+
 function applyCssVars(vars: Record<string, string>) {
   const root = document.documentElement;
   for (const [key, value] of Object.entries(vars)) {
-    if (value) root.style.setProperty(key, value);
+    if (value && !SKIP_VARS.has(key)) root.style.setProperty(key, value);
   }
 }
 

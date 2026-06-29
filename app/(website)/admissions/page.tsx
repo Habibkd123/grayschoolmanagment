@@ -24,14 +24,14 @@ export default async function AdmissionsPage() {
   return (
     <main className="w-full">
       {/* Hero */}
-      <section className="relative py-28 bg-white">
+      <section className="relative py-28 bg-slate-900">
         <div className="absolute inset-0">
           <img src={admissions?.hero_image_url || "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1920&auto=format&fit=crop"} alt="Admissions" className="w-full h-full object-cover" style={{ filter: "blur(3px)", transform: "scale(1.05)" }} />
-          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, #ffffff6b 90%, transparent)" }} />
+          <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "color-mix(in oklab, var(--primary) 75%, transparent)", backdropFilter: "blur(2px)" }} />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <span className="inline-block px-4 py-1.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Join Our Legacy</span>
-          <h1 className="text-5xl md:text-6xl  font-bold text-[#231F20] font-sans font-black leading-tight mb-4">Admissions</h1>
+          <span className="inline-block px-4 py-1.5 bg-white/10 border border-white/20 text-[var(--warning)] font-extrabold text-[12px] font-bold uppercase tracking-widest rounded-sm mb-6">Join Our Legacy</span>
+          <h1 className="text-5xl md:text-6xl  font-bold text-white font-sans font-black leading-tight mb-4">Admissions</h1>
           {admissionOpen ? (
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[13px] font-bold rounded-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Admissions Open

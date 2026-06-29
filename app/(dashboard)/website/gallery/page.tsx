@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Loader2, Plus, Trash2, Image, CheckCircle2, AlertCircle, Camera } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Plus, Trash2, Camera, CheckCircle2, AlertCircle, Video } from "lucide-react";
 import { FileUploadField } from "../../../components/ui/FileUploadField";
 
 const YoutubeIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -83,11 +83,11 @@ export default function GalleryPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/website" className="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center"><Image className="w-5 h-5 text-cyan-400" /></div>
+          <Link href="/website" className="p-2 rounded-lg hover:bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:text-slate-600 dark:text-slate-500 dark:text-slate-400 dark:hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
+          <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center"><Camera className="w-5 h-5 text-[var(--primary)]" /></div>
           <div>
-            <h1 className="text-xl font-bold text-white">Gallery</h1>
-            <p className="text-slate-400 text-[12px]">Photo albums and video gallery</p>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Gallery</h1>
+            <p className="text-slate-600 dark:text-slate-500 dark:text-slate-400 text-[12px]">Photo albums and video gallery</p>
           </div>
         </div>
         <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white text-[13px] font-semibold hover:bg-primary/90 disabled:opacity-60 transition-all">
@@ -101,20 +101,20 @@ export default function GalleryPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
-          <div className="flex items-center gap-2 text-cyan-400 mb-1"><Camera className="w-4 h-4" /><span className="text-[11px] font-semibold uppercase tracking-wider">Photos</span></div>
-          <p className="text-2xl font-black text-white">{data.photos.length}</p>
-          <p className="text-slate-500 text-[11px] mt-1">{albums.length} albums</p>
+        <div className="p-4 rounded-xl border border-[var(--primary)]/20 bg-[var(--primary)]/5">
+          <div className="flex items-center gap-2 text-[var(--primary)] mb-1"><Camera className="w-4 h-4" /><span className="text-[11px] font-semibold uppercase tracking-wider">Photos</span></div>
+          <p className="text-2xl font-black text-slate-900 dark:text-white">{data.photos.length}</p>
+          <p className="text-slate-600 dark:text-slate-500 text-[11px] mt-1">{albums.length} albums</p>
         </div>
-        <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5">
-          <div className="flex items-center gap-2 text-rose-400 mb-1"><YoutubeIcon className="w-4 h-4" /><span className="text-[11px] font-semibold uppercase tracking-wider">Videos</span></div>
-          <p className="text-2xl font-black text-white">{data.videos.length}</p>
+        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-100 dark:bg-slate-50 dark:bg-slate-800/20">
+          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 mb-1"><Video className="w-4 h-4" /><span className="text-[11px] font-semibold uppercase tracking-wider">Videos</span></div>
+          <p className="text-2xl font-black text-slate-900 dark:text-white">{data.videos.length}</p>
         </div>
       </div>
 
       {/* Gallery Settings */}
-      <div className="rounded-2xl border border-slate-700/50 bg-slate-800/30 p-6">
-        <h2 className="text-white font-bold text-[14px] border-b border-slate-700/50 pb-3 mb-4">Gallery Page Settings</h2>
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+        <h2 className="text-slate-900 dark:text-white font-bold text-[14px] border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">Gallery Page Settings</h2>
         <FileUploadField
           label="Hero Banner Image"
           value={data.hero_image_url || ""}
@@ -125,39 +125,39 @@ export default function GalleryPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-800/50 rounded-xl border border-slate-700/50 w-fit">
+      <div className="flex gap-1 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 w-fit">
         {(["photos", "videos"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-lg text-[13px] font-semibold transition-all capitalize ${tab === t ? "bg-primary text-white shadow" : "text-slate-400 hover:text-white"}`}>
-            {t === "photos" ? `📷 Photos (${data.photos.length})` : `🎬 Videos (${data.videos.length})`}
+            className={`px-5 py-2 rounded-lg text-[13px] font-semibold transition-all capitalize ${tab === t ? "bg-primary text-white shadow" : "text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:text-slate-600 dark:text-slate-500 dark:text-slate-400 dark:hover:text-white"}`}>
+            {t === "photos" ? `Photos (${data.photos.length})` : `Videos (${data.videos.length})`}
           </button>
         ))}
       </div>
 
       {/* Photos Tab */}
       {tab === "photos" && (
-        <div className="rounded-2xl border border-slate-700/50 bg-slate-800/30 p-6 space-y-5">
-          <div className="flex items-center justify-between border-b border-slate-700/50 pb-3">
-            <h2 className="text-white font-bold text-[14px]">Photo Albums</h2>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+            <h2 className="text-slate-900 dark:text-white font-bold text-[14px]">Photo Albums</h2>
             <button onClick={addPhoto} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-[12px] font-semibold hover:bg-primary/20 transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add Photo
             </button>
           </div>
           {data.photos.length === 0 ? (
-            <div className="text-center py-10 text-slate-500 text-[13px]">
+            <div className="text-center py-10 text-slate-600 dark:text-slate-500 text-[13px]">
               <Camera className="w-12 h-12 text-slate-700 mx-auto mb-2" />
               No photos yet. Add photo URLs to build your gallery.
             </div>
           ) : (
             <div className="space-y-3">
               {data.photos.map((photo, i) => (
-                <div key={i} className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/30">
+                <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
                   <div className="flex gap-3 items-start">
                     {/* Preview */}
                     {photo.url ? (
-                      <img src={photo.url} alt={photo.caption} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-slate-700/50" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      <img src={photo.url} alt={photo.caption} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-700" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     ) : (
-                      <div className="w-16 h-16 rounded-lg bg-slate-700/50 border border-slate-700/30 flex items-center justify-center shrink-0">
+                      <div className="w-16 h-16 rounded-lg bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
                         <Camera className="w-6 h-6 text-slate-600" />
                       </div>
                     )}
@@ -171,18 +171,18 @@ export default function GalleryPage() {
                       />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Caption</label>
+                          <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Caption</label>
                           <input type="text" value={photo.caption} onChange={(e) => updatePhoto(i, "caption", e.target.value)} placeholder="e.g. Annual Sports Day"
-                            className="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-[12px] text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all" />
+                            className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[12px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all" />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Album</label>
+                          <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Album</label>
                           <input type="text" value={photo.album} onChange={(e) => updatePhoto(i, "album", e.target.value)} placeholder="e.g. Sports Day 2024"
-                            className="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-[12px] text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all" />
+                            className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[12px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all" />
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => removePhoto(i)} className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0">
+                    <button onClick={() => removePhoto(i)} className="p-1.5 text-slate-600 dark:text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -195,22 +195,22 @@ export default function GalleryPage() {
 
       {/* Videos Tab */}
       {tab === "videos" && (
-        <div className="rounded-2xl border border-slate-700/50 bg-slate-800/30 p-6 space-y-5">
-          <div className="flex items-center justify-between border-b border-slate-700/50 pb-3">
-            <h2 className="text-white font-bold text-[14px]">Video Gallery</h2>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+            <h2 className="text-slate-900 dark:text-white font-bold text-[14px]">Video Gallery</h2>
             <button onClick={addVideo} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-[12px] font-semibold hover:bg-primary/20 transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add Video
             </button>
           </div>
           {data.videos.length === 0 ? (
-            <div className="text-center py-10 text-slate-500 text-[13px]">
-              <YoutubeIcon className="w-12 h-12 text-slate-700 mx-auto mb-2" />
+            <div className="text-center py-10 text-slate-600 dark:text-slate-500 text-[13px]">
+              <Video className="w-12 h-12 text-slate-700 mx-auto mb-2" />
               No videos yet. Add YouTube or video embed URLs.
             </div>
           ) : (
             <div className="space-y-3">
               {data.videos.map((video, i) => (
-                <div key={i} className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/30">
+                <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
                   <div className="flex gap-4 items-start">
                     {/* Preview */}
                     {video.url ? (
@@ -218,18 +218,18 @@ export default function GalleryPage() {
                         const ytMatch = video.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
                         if (ytMatch && ytMatch[1]) {
                           return (
-                            <img src={`https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-slate-700/50" alt="YT Thumbnail" />
+                            <img src={`https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-700" alt="YT Thumbnail" />
                           );
                         } else {
                           return (
-                            <video src={video.url} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-slate-700/50 bg-black" />
+                            <video src={video.url} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-slate-700 bg-black" />
                           );
                         }
                       })()
                     ) : (
-                      <div className="w-16 h-16 rounded-lg bg-slate-700/50 border border-slate-700/30 flex items-center justify-center shrink-0">
-                        <YoutubeIcon className="w-6 h-6 text-slate-600" />
-                      </div>
+                      <div className="w-16 h-16 rounded-lg bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
+                          <Video className="w-6 h-6 text-slate-600" />
+                        </div>
                     )}
                     <div className="flex-1 space-y-3">
                       <FileUploadField
@@ -240,12 +240,12 @@ export default function GalleryPage() {
                         placeholder="Upload video or paste link (YouTube, MP4, etc.)..."
                       />
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Title / Caption</label>
+                        <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Title / Caption</label>
                         <input type="text" value={video.title} onChange={(e) => updateVideo(i, "title", e.target.value)} placeholder="e.g. Annual Day 2024 Highlights"
-                          className="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-[12px] text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all" />
+                          className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[12px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all" />
                       </div>
                     </div>
-                    <button onClick={() => removeVideo(i)} className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0">
+                    <button onClick={() => removeVideo(i)} className="p-1.5 text-slate-600 dark:text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>

@@ -28,7 +28,10 @@ export async function ServerThemeStyles() {
     cssVars = themeColorsToCssVars(resolveThemeConfig(null).colors);
   }
 
+  // Skip background/foreground — hardcoded light mode values in globals.css
+  const SKIP_VARS = new Set(["--background", "--foreground"]);
   const block = Object.entries(cssVars)
+    .filter(([key]) => !SKIP_VARS.has(key))
     .map(([key, value]) => `${key}: ${value};`)
     .join("\n  ");
 
